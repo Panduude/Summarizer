@@ -4,7 +4,7 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["STREAMLIT_GLOBAL_DEVELOPMENT_MODE"] = "false"
 
 import asyncio
-import nest_asyncio
+import nest_asyncio  # Now properly installed
 nest_asyncio.apply()
 
 import streamlit as st
@@ -20,13 +20,14 @@ fix_event_loop()
 
 @st.cache_resource(show_spinner=False)
 def load_model():
-    from transformers import BartForConditionalGeneration, BartTokenizer
     model_name = "facebook/bart-large-cnn"
     tokenizer = BartTokenizer.from_pretrained(model_name)
     model = BartForConditionalGeneration.from_pretrained(model_name)
-    return tokenizer, model
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    model = model.to(device)  # Move model to device
+    return tokenizer, model, device  # Now returns 3 values
 
-tokenizer, model, device = load_model()
+tokenizer, model, device = load_model()  # Now matches 3 return values
 
 st.set_page_config(page_title="Summarizer", page_icon="📝")
 st.title("📝 Text Summarizer")
